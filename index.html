@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS Kasir</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Dashboard Kasir</p>
+        <h1>POS Penjualan Modern</h1>
+      </div>
+      <div class="topbar-card">
+        <span class="status-dot"></span>
+        <div>
+          <strong>Toko Aktif</strong>
+          <p id="tanggalHari">Memuat tanggal transaksi...</p>
+        </div>
+      </div>
+    </header>
+
+    <section class="metrics">
+      <article class="metric-card accent">
+        <span>Total Item</span>
+        <strong id="totalItem">0</strong>
+        <p>Jumlah unit produk di keranjang aktif</p>
+      </article>
+      <article class="metric-card">
+        <span>Total Tagihan</span>
+        <strong id="totalBayar">Rp 0</strong>
+        <p>Total pembayaran yang harus dibayarkan pelanggan</p>
+      </article>
+      <article class="metric-card">
+        <span>Status Transaksi</span>
+        <strong id="statusTransaksi">Menunggu Item</strong>
+        <p id="infoTransaksi">Tambahkan produk untuk memulai transaksi baru</p>
+      </article>
+      <article class="metric-card">
+        <span>Transaksi Hari Ini</span>
+        <strong id="totalTransaksiHariIni">0</strong>
+        <p id="omzetHariIni">Omzet hari ini Rp 0</p>
+      </article>
+    </section>
+
+    <main class="app">
+      <section class="panel hero-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Input Produk</p>
+            <h2>Tambah Produk ke Keranjang</h2>
+          </div>
+          <span class="panel-badge">Siap Transaksi</span>
+        </div>
+
+        <section class="inline-panel">
+          <div class="mini-grid">
+            <label>
+              Nama Kasir
+              <input id="namaKasir" type="text" placeholder="Contoh: Ega">
+            </label>
+            <label>
+              Pelanggan
+              <input id="namaPelanggan" type="text" placeholder="Contoh: Pelanggan Umum">
+            </label>
+            <label>
+              Nama Toko
+              <input id="namaToko" type="text" placeholder="Contoh: Toko Modern Ega">
+            </label>
+            <label>
+              Alamat Toko
+              <input id="alamatToko" type="text" placeholder="Jl. Raya No.123">
+            </label>
+            <label>
+              Telp Toko
+              <input id="telpToko" type="text" placeholder="0812-3456-7890">
+            </label>
+            <label>
+              NPWP
+              <input id="npwpToko" type="text" placeholder="12.345.678.9-123.000">
+            </label>
+          </div>
+        </section>
+
+        <section class="quick-products">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Produk Favorit</p>
+              <h3>Pilih Cepat</h3>
+            </div>
+            <p class="section-copy">Klik produk populer untuk mengisi form otomatis.</p>
+          </div>
+          <div class="quick-list" id="quickProducts"></div>
+        </section>
+
+        <div class="grid">
+          <label>
+            Nama Produk
+            <input id="namaProduk" type="text" placeholder="Contoh: Kopi Susu">
+          </label>
+          <label>
+            Harga (Rp)
+            <input id="hargaProduk" type="number" min="0" placeholder="Contoh: 18000">
+          </label>
+          <label>
+            Qty
+            <input id="qtyProduk" type="number" min="1" value="1">
+          </label>
+        </div>
+
+        <div class="actions">
+          <button id="btnTambah" type="button">Tambah ke Keranjang</button>
+          <button id="btnSimpanProduk" type="button" class="ghost">Simpan ke Produk Favorit</button>
+          <button id="btnReset" type="button" class="secondary">Reset Transaksi</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Keranjang Belanja</p>
+            <h2>Daftar Item Transaksi</h2>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Produk</th>
+                <th>Qty</th>
+                <th>Harga</th>
+                <th>Subtotal</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyKeranjang"></tbody>
+          </table>
+        </div>
+
+        <section class="checkout-card">
+          <div class="checkout-header">
+            <div>
+              <p class="eyebrow">Pembayaran</p>
+              <h3>Finalisasi Transaksi</h3>
+            </div>
+            <div class="receipt-note">Struk siap dicetak otomatis</div>
+          </div>
+
+          <div class="summary-grid">
+            <article class="summary-card">
+              <span>Subtotal</span>
+              <strong id="subtotalView">Rp 0</strong>
+            </article>
+            <article class="summary-card">
+              <span>Diskon</span>
+              <strong id="diskonView">Rp 0</strong>
+            </article>
+            <article class="summary-card">
+              <span>Pajak</span>
+              <strong id="pajakView">Rp 0</strong>
+            </article>
+            <article class="summary-card total">
+              <span>Grand Total</span>
+              <strong id="grandTotalView">Rp 0</strong>
+            </article>
+          </div>
+
+          <div class="grid pay options-grid">
+            <label>
+              Diskon (%)
+              <input id="diskonPersen" type="number" min="0" max="100" value="0">
+            </label>
+            <label>
+              Pajak (%)
+              <input id="pajakPersen" type="number" min="0" max="100" value="11">
+            </label>
+            <label>
+              Metode Bayar
+              <select id="metodeBayar">
+                <option value="Tunai">Tunai</option>
+                <option value="QRIS">QRIS</option>
+                <option value="Debit">Debit</option>
+                <option value="Transfer">Transfer</option>
+              </select>
+            </label>
+            <label>
+              Catatan
+              <input id="catatanTransaksi" type="text" placeholder="Contoh: Pesanan meja 4">
+            </label>
+          </div>
+
+          <div id="cashPaymentFields" class="grid pay">
+            <label id="uangBayarField">
+              Uang Bayar (Rp)
+              <input id="uangBayar" type="number" min="0" placeholder="Contoh: 50000">
+            </label>
+            <label id="kembalianField">
+              Kembalian
+              <input id="kembalian" type="text" readonly value="Rp 0">
+            </label>
+          </div>
+
+          <div class="actions">
+            <button id="btnHitung" type="button" class="ghost">Hitung Kembalian</button>
+            <button id="btnCetak" type="button">Cetak Struk</button>
+          </div>
+        </section>
+
+        <section class="history-card">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Riwayat</p>
+              <h3>Transaksi Terakhir</h3>
+            </div>
+            <div class="history-tools">
+              <button id="btnHapusSemuaRiwayat" type="button" class="secondary">Hapus Semua Riwayat</button>
+            </div>
+          </div>
+          <div id="riwayatTransaksi" class="history-list"></div>
+        </section>
+
+        <section class="history-card online-orders-card">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Pesanan Online</p>
+              <h3>Menu Pesanan Masuk</h3>
+            </div>
+            <div class="history-tools">
+              <button id="btnDummyOnlineOrder" type="button" class="ghost">Tambah Dummy Pesanan</button>
+            </div>
+          </div>
+          <div class="online-summary">
+            <article class="summary-card">
+              <span>Pesanan Masuk</span>
+              <strong id="onlineOrderCount">0</strong>
+            </article>
+            <article class="summary-card">
+              <span>Status</span>
+              <strong id="onlineOrderStatus">Belum Ada Pesanan</strong>
+            </article>
+          </div>
+          <div id="onlineOrdersList" class="history-list"></div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <section id="struk" class="struk">
+    <div class="struk-header">
+      <img src="gambar/OIP.jpg" alt="Logo Toko" class="struk-logo-img">
+      <p id="strukStoreNama" class="struk-title"></p>
+      <p id="strukStoreAlamat"></p>
+      <p id="strukStoreTelp"></p>
+      <p id="strukStoreNpwp"></p>
+    </div>
+    <hr>
+    <p id="nomorTransaksi" class="struk-label"></p>
+    <p id="tanggalTransaksi" class="struk-label"></p>
+    <p id="strukKasir" class="struk-label"></p>
+    <p id="strukPelanggan" class="struk-label"></p>
+    <p id="strukMetodeBayar" class="struk-label"></p>
+    <p id="strukCatatan" class="struk-label"></p>
+    <hr>
+
+    <div class="items-section" id="detailStrukRows"></div>
+
+    <hr>
+    <div class="struk-summary">
+      <p><strong>Total Item:</strong> <span id="strukTotalItem" class="num">0</span></p>
+      <p><strong>Subtotal:</strong> <span id="strukSubtotal" class="num">Rp 0</span></p>
+      <p><strong>Diskon (</strong><span id="diskonPersenStruk"></span><strong>):</strong> <span id="strukDiskon" class="num">Rp 0</span></p>
+      <p><strong id="strukPajakLabel">Pajak/PPN (11%)</strong>: <span id="strukPajak" class="num">Rp 0</span></p>
+      <hr class="thick">
+      <p class="grand"><strong>GRAND TOTAL:</strong> <span id="strukTotal" class="num">Rp 0</span></p>
+      <p id="strukBayarRow"><strong>Bayar:</strong> <span id="strukBayar" class="num">Rp 0</span></p>
+      <p id="strukKembaliRow" class="change"><strong>Uang Kembali:</strong> <span id="strukKembali" class="num">Rp 0</span></p>
+      <p>_______________________</p>
+    </div>
+    <hr>
+
+    <div class="struk-footer">
+      <hr>
+      <p>Barang yang sudah dibeli tidak dapat ditukar atau dikembalikan</p>
+      <p>Terima kasih telah berbelanja di <strong id="strukStoreNamaFooter"></strong></p>
+      <p>Telp: <span id="strukStoreTelpFooter"></span> | Follow IG @tokomodernega</p>
+      <p>_______________________</p>
+    </div>
+    <div class="spacer-panjang"></div>
+  </section>
+
+  <script defer src="script.js"></script>
+</body>
+</html>
