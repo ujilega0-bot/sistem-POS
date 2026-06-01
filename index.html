@@ -21,6 +21,7 @@
         <div>
           <strong>Toko Aktif</strong>
           <p id="tanggalHari">Memuat tanggal transaksi...</p>
+          <a class="topbar-link" href="ecommerce.html" target="_blank" rel="noopener">Buka Web Ecommerce</a>
         </div>
       </div>
     </header>
@@ -246,6 +247,29 @@
             </article>
           </div>
           <div id="onlineOrdersList" class="history-list"></div>
+        </section>
+
+        <section class="history-card sheets-card">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">Database</p>
+              <h3>Google Sheets</h3>
+            </div>
+            <p class="section-copy">Pakai URL Web App dari Google Apps Script untuk menyambungkan POS dan ecommerce.</p>
+          </div>
+
+          <div class="sheets-config">
+            <label>
+              URL Google Apps Script Web App
+              <input id="googleSheetEndpoint" type="url" placeholder="https://script.google.com/macros/s/.../exec">
+            </label>
+            <div class="actions sheets-actions">
+              <button id="btnSimpanEndpoint" type="button" class="ghost">Simpan URL</button>
+              <button id="btnTarikPesananSheets" type="button">Tarik Pesanan</button>
+              <button id="btnKirimProdukSheets" type="button" class="secondary">Kirim Produk</button>
+            </div>
+          </div>
+          <p id="sheetSyncStatus" class="sync-status">Belum tersambung ke Google Sheets.</p>
         </section>
       </section>
     </main>
