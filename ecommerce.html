@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Warung Kunyu Ecommerce</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .shop-shell { max-width: 1120px; margin: 0 auto; padding: 28px 18px 36px; }
+    .shop-hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 22px; align-items: center; margin-bottom: 22px; }
+    .shop-hero h1 { font-size: clamp(2rem, 5vw, 4rem); line-height: 1.02; margin-bottom: 12px; }
+    .shop-hero p { color: var(--muted); line-height: 1.7; }
+    .shop-logo { width: 100%; max-height: 320px; object-fit: cover; border-radius: 24px; box-shadow: var(--shadow); }
+    .shop-layout { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: start; }
+    .product-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .product-card { padding: 18px; border: 1px solid var(--border); border-radius: 18px; background: var(--card-solid); box-shadow: var(--shadow); }
+    .product-card h3 { margin-bottom: 8px; }
+    .product-card p { color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .cart-panel { position: sticky; top: 18px; }
+    .cart-list { display: grid; gap: 10px; margin: 14px 0; }
+    .cart-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; padding: 12px; border: 1px solid var(--border); border-radius: 14px; background: rgba(255,255,255,0.82); }
+    .cart-row small { color: var(--muted); }
+    .cart-total { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 1.1rem; }
+    .shop-status { margin-top: 12px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    @media (max-width: 900px) {
+      .shop-hero, .shop-layout, .product-grid { grid-template-columns: 1fr; }
+      .cart-panel { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shop-shell">
+    <header class="shop-hero">
+      <div>
+        <p class="eyebrow">Web Ecommerce</p>
+        <h1>Warung Kunyu</h1>
+        <p>Pilih produk, kirim pesanan, lalu pesanan akan masuk ke Google Sheets dan bisa ditarik dari POS kasir.</p>
+        <div class="actions">
+          <a class="button-link" href="index.html">Buka POS</a>
+        </div>
+      </div>
+      <img class="shop-logo" src="gambar/OIP.jpg" alt="Warung Kunyu">
+    </header>
+
+    <main class="shop-layout">
+      <section class="panel">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Menu</p>
+            <h2>Produk Tersedia</h2>
+          </div>
+          <button id="btnLoadProducts" type="button" class="ghost">Muat Produk</button>
+        </div>
+        <div id="productGrid" class="product-grid"></div>
+      </section>
+
+      <aside class="panel cart-panel">
+        <div class="section-title">
+          <div>
+            <p class="eyebrow">Checkout</p>
+            <h2>Pesanan</h2>
+          </div>
+        </div>
+
+        <label>
+          URL Google Apps Script Web App
+          <input id="shopEndpoint" type="url" placeholder="https://script.google.com/macros/s/.../exec">
+        </label>
+        <div class="grid pay">
+          <label>
+            Nama Pelanggan
+            <input id="customerName" type="text" placeholder="Nama Anda">
+          </label>
+          <label>
+            Catatan
+            <input id="orderNote" type="text" placeholder="Contoh: tanpa pedas">
+          </label>
+        </div>
+
+        <div id="cartList" class="cart-list"></div>
+        <div class="cart-total">
+          <span>Total</span>
+          <strong id="cartTotal">Rp 0</strong>
+        </div>
+        <div class="actions">
+          <button id="btnCheckout" type="button">Kirim Pesanan</button>
+          <button id="btnClearCart" type="button" class="secondary">Kosongkan</button>
+        </div>
+        <p id="shopStatus" class="shop-status">Isi URL Apps Script yang sama dengan POS.</p>
+      </aside>
+    </main>
+  </div>
+
+  <script>
+    const STORAGE_KEY_ENDPOINT = 'pos.googleSheetEndpoint';
+    const DEFAULT_PRODUCTS = [
+      { nama: 'Kopi Susu', harga: 18000 },
+      { nama: 'Cappuccino', harga: 22000 },
+      { nama: 'Roti Bakar', harga: 16000 },
+      { nama: 'Nasi Goreng', harga: 28000 },
+      { nama: 'Es Teh Manis', harga: 8000 },
+      { nama: 'Air Mineral', harga: 6000 }
+    ];
+
+    const productGrid = document.getElementById('productGrid');
+    const cartList = document.getElementById('cartList');
+    const cartTotal = document.getElementById('cartTotal');
+    const shopStatus = document.getElementById('shopStatus');
+    const shopEndpoint = document.getElementById('shopEndpoint');
+    const customerName = document.getElementById('customerName');
+    const orderNote = document.getElementById('orderNote');
+    let products = [...DEFAULT_PRODUCTS];
+    let cart = [];
+
+    const formatRupiah = (angka) =>
+      new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka || 0);
+
+    function escapeHTML(text) {
+      return String(text).replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[char]));
+    }
+
+    function setStatus(message, error = false) {
+      shopStatus.textContent = message;
+      shopStatus.style.color = error ? '#b42318' : '';
+    }
+
+    function getEndpoint() {
+      return String(shopEndpoint.value || '').trim();
+    }
+
+    function saveEndpoint() {
+      const endpoint = getEndpoint();
+      if (endpoint) localStorage.setItem(STORAGE_KEY_ENDPOINT, endpoint);
+      return endpoint;
+    }
+
+    function renderProducts() {
+      productGrid.innerHTML = products.map((item, index) => `
+        <article class="product-card">
+          <h3>${escapeHTML(item.nama)}</h3>
+          <p>Siap dipesan dan otomatis masuk ke menu pesanan online POS.</p>
+          <div class="cart-total">
+            <strong>${formatRupiah(item.harga)}</strong>
+            <button type="button" data-add="${index}">Tambah</button>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    function renderCart() {
+      if (cart.length === 0) {
+        cartList.innerHTML = '<div class="history-empty">Keranjang masih kosong.</div>';
+      } else {
+        cartList.innerHTML = cart.map((item, index) => `
+          <div class="cart-row">
+            <div>
+              <strong>${escapeHTML(item.nama)}</strong>
+              <small>${item.qty} x ${formatRupiah(item.harga)}</small>
+            </div>
+            <button type="button" class="secondary" data-remove="${index}">Hapus</button>
+          </div>
+        `).join('');
+      }
+      const total = cart.reduce((sum, item) => sum + item.harga * item.qty, 0);
+      cartTotal.textContent = formatRupiah(total);
+    }
+
+    function readSheets(action) {
+      const endpoint = saveEndpoint();
+      if (!endpoint) return Promise.reject(new Error('URL Google Apps Script belum diisi.'));
+
+      return new Promise((resolve, reject) => {
+        const callbackName = `shopSheetsCallback_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        let url;
+        try {
+          url = new URL(endpoint);
+        } catch (error) {
+          reject(new Error('URL Google Apps Script tidak valid.'));
+          return;
+        }
+        url.searchParams.set('action', action);
+        url.searchParams.set('callback', callbackName);
+        url.searchParams.set('_', Date.now().toString());
+
+        const script = document.createElement('script');
+        const cleanup = () => {
+          delete window[callbackName];
+          script.remove();
+        };
+        const timer = window.setTimeout(() => {
+          cleanup();
+          reject(new Error('Timeout membaca Google Sheets.'));
+        }, 12000);
+
+        window[callbackName] = (response) => {
+          window.clearTimeout(timer);
+          cleanup();
+          resolve(response);
+        };
+        script.onerror = () => {
+          window.clearTimeout(timer);
+          cleanup();
+          reject(new Error('Gagal membaca Google Sheets.'));
+        };
+        script.src = url.toString();
+        document.body.appendChild(script);
+      });
+    }
+
+    function postSheets(action, payload) {
+      const endpoint = saveEndpoint();
+      if (!endpoint) return Promise.reject(new Error('URL Google Apps Script belum diisi.'));
+      return fetch(endpoint, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({ action, source: 'ecommerce', payload })
+      });
+    }
+
+    function loadProducts() {
+      setStatus('Memuat produk dari Google Sheets...');
+      readSheets('getProducts')
+        .then((response) => {
+          if (!response || response.ok === false) throw new Error(response?.message || 'Produk tidak ditemukan.');
+          const incoming = Array.isArray(response.products) ? response.products : [];
+          products = incoming.length ? incoming : DEFAULT_PRODUCTS;
+          renderProducts();
+          setStatus(`${products.length} produk siap dipesan.`);
+        })
+        .catch((error) => {
+          products = DEFAULT_PRODUCTS;
+          renderProducts();
+          setStatus(`${error.message} Menampilkan produk contoh.`, true);
+        });
+    }
+
+    function checkout() {
+      const endpoint = saveEndpoint();
+      const name = customerName.value.trim();
+      if (!endpoint) {
+        setStatus('Isi URL Google Apps Script dulu.', true);
+        return;
+      }
+      if (!name || cart.length === 0) {
+        setStatus('Isi nama pelanggan dan pilih minimal satu produk.', true);
+        return;
+      }
+
+      const order = {
+        id: `WEB-${Date.now().toString().slice(-8)}`,
+        customerName: name,
+        source: 'Website',
+        note: orderNote.value.trim() || '-',
+        createdAt: new Date().toISOString(),
+        status: 'baru',
+        paymentStatus: 'belum dibayar',
+        items: cart
+      };
+
+      setStatus('Mengirim pesanan...');
+      postSheets('addOrder', { order })
+        .then(() => {
+          cart = [];
+          renderCart();
+          setStatus(`Pesanan ${order.id} terkirim. Buka POS lalu klik Tarik Pesanan.`);
+        })
+        .catch((error) => setStatus(error.message, true));
+    }
+
+    productGrid.addEventListener('click', (event) => {
+      const index = event.target.getAttribute('data-add');
+      if (index === null) return;
+      const product = products[Number(index)];
+      if (!product) return;
+      const existing = cart.find((item) => item.nama === product.nama && item.harga === product.harga);
+      if (existing) existing.qty += 1;
+      else cart.push({ nama: product.nama, harga: Number(product.harga), qty: 1 });
+      renderCart();
+    });
+
+    cartList.addEventListener('click', (event) => {
+      const index = event.target.getAttribute('data-remove');
+      if (index === null) return;
+      cart.splice(Number(index), 1);
+      renderCart();
+    });
+
+    document.getElementById('btnLoadProducts').addEventListener('click', loadProducts);
+    document.getElementById('btnCheckout').addEventListener('click', checkout);
+    document.getElementById('btnClearCart').addEventListener('click', () => {
+      cart = [];
+      renderCart();
+    });
+
+    shopEndpoint.value = localStorage.getItem(STORAGE_KEY_ENDPOINT) || '';
+    renderProducts();
+    renderCart();
+    if (shopEndpoint.value) loadProducts();
+  </script>
+</body>
+</html>
