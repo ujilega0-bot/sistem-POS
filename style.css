@@ -68,6 +68,19 @@ p {
   box-shadow: var(--shadow);
 }
 
+.topbar-link {
+  display: inline-block;
+  margin-top: 6px;
+  color: #d7fff6;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.topbar-link:hover {
+  text-decoration: underline;
+}
+
 .status-dot {
   width: 12px;
   height: 12px;
@@ -262,6 +275,23 @@ button {
   cursor: pointer;
   box-shadow: 0 12px 24px rgba(164, 74, 63, 0.18);
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.button-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 13px 18px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--primary), #c15c4f);
+  color: #fff;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 12px 24px rgba(164, 74, 63, 0.18);
+}
+
+.button-link:hover {
+  background: linear-gradient(135deg, var(--primary-strong), var(--primary));
 }
 
 button:hover {
@@ -479,6 +509,26 @@ tbody tr:last-child td {
 
 .online-orders-card {
   margin-top: 18px;
+}
+
+.sheets-card {
+  margin-top: 18px;
+}
+
+.sheets-config {
+  display: grid;
+  gap: 12px;
+}
+
+.sheets-actions {
+  margin-top: 0;
+}
+
+.sync-status {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .online-summary {
